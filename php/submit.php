@@ -1,29 +1,23 @@
 <?php
+
 header('Access-Control-Allow-Origin: *');
+include 'functions.php';
 
-require_once dirname(__FILE__) . '/vendor/autoload.php';
+$domain = $_POST["domain"];
+$values = $_POST;
+unset($values["domain"]);
+$arr = array(
+    'date_create%sql' => 'NOW()',
+    'message' => json_encode($values),
+    'domain' => $domain
+);
 
-use Mailgun\Mailgun;
+insertRow($arr);
 
-$to = "a.studenic@gmail..com";
-$subject = "support";
-$from = $_GET["mail"];
-$message = $_GET["message"] . "\n\n" . print_r($_GET, true);
+$retArr = array(
+    "class" => "alert-success",
+    "alertMessage" => "Great! The form has been successfully sent. You can close this window now."
+);
 
-
-
-/*
-  print_r($_GET);
-  $headers = 'From: ' . $from;
-  mail($to, $subject, $message, $headers);
- */
-
-$mg = new Mailgun("key-42jfgix5x0d01p51hi2jyqinl7ao6tz7");
-$domain = "sportpassapp.com";
-
-$mg->sendMessage($domain, array('from' => $from,
-    'to' => $to,
-    'subject' => $subject,
-    'text' => $message));
+echo json_encode($retArr);
 ?>
-Message has been sent
