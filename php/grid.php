@@ -12,7 +12,6 @@ if (!$sidx)
 $result = dibi::query('SELECT COUNT(*) AS count FROM `hd_message`');
 $count = $result->fetchSingle();
 
-var_dump($result);die;
 
 
 // calculate the total pages for the query
@@ -46,6 +45,8 @@ try {
 } catch (DibiException $e) {
     var_dump($e);
 };
+
+var_dump($rows);die;
 
 $rowsArr = array();
 foreach ($rows as $i => $row) {
