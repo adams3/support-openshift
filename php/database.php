@@ -12,7 +12,7 @@ require dirname(__FILE__) . '/../libs/dibi/dibi/dibi.php';
 
 $options = array(
     'driver' => 'mysql',
-    'host' => '127.11.88.130:3306 ',
+    'host' => 'localhost',
     'username' => 'adminv2jhrsc',
     'password' => '76f-iK4Jy6uF',
     'database' => 'support',
