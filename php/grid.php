@@ -84,9 +84,10 @@ function fix_keys($array) {
         return $array;
     }
 }
-var_dump($resultArr);die;
+
 $arrrr = fix_keys($resultArr);
 
+var_dump($arrrr);die;
 $js = json_encode($arrrr, JSON_PRETTY_PRINT);
 
 var_dump($js);die;
