@@ -46,8 +46,6 @@ try {
     var_dump($e);
 };
 
-var_dump($rows);die;
-
 $rowsArr = array();
 foreach ($rows as $i => $row) {
     $rowsArr[$i]["id"] = $i;
@@ -90,6 +88,8 @@ function fix_keys($array) {
 $arrrr = fix_keys($resultArr);
 
 $js = json_encode($arrrr, JSON_PRETTY_PRINT);
+
+var_dump($js);die;
 echo $js;
 
 ?>
