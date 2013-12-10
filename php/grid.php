@@ -90,7 +90,7 @@ $arrrr = fix_keys($resultArr);
 // var_dump($arrrr);die;
 $js = json_encode($arrrr);
 
-var_dump($js);die;
+// var_dump($js);die;
 echo $js;
 
 ?>
