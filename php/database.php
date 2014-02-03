@@ -15,14 +15,12 @@ define('DB_USER',getenv('OPENSHIFT_MYSQL_DB_USERNAME'));
 define('DB_PASS',getenv('OPENSHIFT_MYSQL_DB_PASSWORD'));
 define('DB_NAME',getenv('OPENSHIFT_GEAR_NAME'));
 
-var_dump(DB_HOST);die;
-
 $options = array(
     'driver' => 'mysql',
-    'host' => 'localhost',
-    'username' => 'adminv2jhrsc',
-    'password' => '76f-iK4Jy6uF',
-    'database' => 'support',
+    'host' => DB_HOST,
+    'username' => DB_USER,
+    'password' => DB_PASS,
+    'database' => DB_NAME,
 );
 
 // v případě chyby vyhodí DibiException
