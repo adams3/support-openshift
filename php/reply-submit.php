@@ -48,8 +48,14 @@ if (isset($_POST)) {
 //    if($res["success"]){
 //        $sent = "danger";
 //    }
+        if($messageId) {
+            header("location:reply.php?id=" . $messageId . "&sent=" . $sent);
+            exit();
+        } else {
+            header("location:reply.php?sent=" . $sent);
+        }
 
-        header("location:reply.php?id=" . $messageId . "&sent=" . $sent);
+        
     }
 }
 ?>
