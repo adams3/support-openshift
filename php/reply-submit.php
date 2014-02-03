@@ -1,7 +1,7 @@
 <?php
 
 include 'functions.php';
-//require_once 'vendor/autoload.php';
+require_once 'vendor/autoload.php';
 use Mailgun\Mailgun;
 
 if (isset($_POST)) {
