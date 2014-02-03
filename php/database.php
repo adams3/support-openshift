@@ -18,10 +18,10 @@ $options = array(
 );
 
 // v případě chyby vyhodí DibiException
-try {
+//try {
     dibi::connect($options);
-} catch (DibiException $e) {
+//} catch (DibiException $e) {
     die("error db connection");
-};
+//};
 
 ?>
