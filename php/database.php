@@ -27,7 +27,6 @@ $options = array(
 try {
     dibi::connect($options);
 } catch (DibiException $e) {
-var_dump($e);
     die("error db connection");
 };
 
