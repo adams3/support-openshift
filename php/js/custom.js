@@ -6,18 +6,37 @@ var lastButtonNumber = 0;
 
 var bootstrapJs = "//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js";
 var bootstrapCss = "//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css";
-var filename = "config/helpdesk-form.js";
+var filename = "helpdesk-form.js";
+var submit = "/submit.php"
+var address = "";
+var hashUserId = 0; //hash
+var hashFormId = 0; //hash
+var originalUserId = 0;
+var originalFormId = 0;
 
 $(function() {
 
-    $.getJSON("config/configureForm.json", function(data) {
-        var parsed = $.parseJSON(data.form);
+    var split = location.search.replace('?', '').split('=')
+    $.getJSON("get-form.php", {"formId" : split[1]}, function(data) {
+
+        originalUserId = data.userId;
+        originalFormId = data.formId;
+        hashUserId = data.hashUserId;
+        hashFormId = data.hashFormId;
+        address = "config/" + hashUserId + "/" + hashFormId + "/" + filename;
+
+        var parsed = data.form;
         for (var index in parsed) {
             $('input').each(function() {
                 if ($(this).attr('name') == index) {
                     $(this).val(parsed[index]);
                 }
             });
+        }
+
+        //can be removed if submit field is visible
+        if($('#directUrl').length > 0) {
+            $('#directUrl').val("http://" + window.location.hostname + submit);
         }
 
         var rows = parsed['row'];
@@ -76,16 +95,28 @@ $(function() {
 
         e.preventDefault();
         var sendArray = $(this).serializeArray();
+        sendArray.push({name : "formId", value : originalFormId});
         var parsed = null;
 
         $.post('save-form.php', sendArray, function(data) {
-            parsed = $.parseJSON(data.form);
+            parsed = data.form;
             var rows = parsed['row'];
+
+//            originalUserId = data.userId;
+//            originalFormId = data.formId;
+//            hashUserId = data.hashUserId;
+//            hashFormId = data.hashFormId;
+//            address = "config/" + hashUserId + "/" + hashFormId + "/" + filename;
+
+//potrebujem len zistit ci je nova, ak ano tak presmerujem na ?id=NoveId&save=new
+
+//console.log(data.new);
+
             var buttons = parsed['button'];
 
             var $confirmedDiv = $('<div id="confirmed" class="display-none">');
             var $modalDiv = $('<div id="sp-modal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"></div><div class="modal-body"></div></div></div></div>');
-            var $goBackButton = $('<button id="goBack" onclick="toggleBack()" class="btn btn-primary" type="button">Back to form config</button>');
+            var $goBackButton = $('<button id="goBack" onclick="toggleBack()" class="btn btn-primary" type="button">Back to form configuration</button>');
             var $copyMe = $('<div id="copyMe" class="tab-pane fade in active"><button id="copyButton" type="button" class="btn btn-info" data-clipboard-target="copyText">Copy to clipboard</button><textarea id="copyText" class="form-control" rows="3" readonly></textarea></div>');
             var $copyMeAdvanced = $('<div id="copyMeAdvanced" class="tab-pane fade in"><button id="copyButtonAdvanced" type="button" class="btn btn-info" data-clipboard-target="copyTextAdvanced">Copy to clipboard</button><textarea id="copyTextAdvanced" class="form-control" rows="10" readonly></textarea></div>');
             var $tabs = $('<ul id="myTab" class="nav nav-tabs"><li class="active"><a href="#copyMe" data-toggle="tab">Basic copiable script</a></li><li><a href="#copyMeAdvanced" data-toggle="tab">Advanced copiable script</a></li></ul></li></ul>')
@@ -102,10 +133,22 @@ $(function() {
             var $header = $('<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title">' + parsed['form-action'] + '</h4>');
             var $form = $('<form role="form" action=' + parsed['url'] + ' id="sp-support-forms">');
 
-            $('div.modal-header').append($header);
-            $('div.modal-body').append($form);
+            $('#sp-modal div.modal-header').append($header);
+            $('#sp-modal div.modal-body').append($form);
             $form.append('<input id="domain" name="domain" type="hidden" />');
             $form.append('<div id="alertMessage" class="alert" style="display:none;"></div>');
+
+            var $inputFormId = $(document.createElement('input'));
+            $inputFormId.attr('type', 'hidden');
+            $inputFormId.attr('name', 'formId');
+            $inputFormId.val(originalFormId);
+            $form.append($inputFormId);
+
+            var $inputUserId = $(document.createElement('input'));
+            $inputUserId.attr('type', 'hidden');
+            $inputUserId.attr('name', 'userId');
+            $inputUserId.val(originalUserId);
+            $form.append($inputUserId);
 
             /*********** ROWS **********/
             for (var i in rows) {
@@ -196,10 +239,10 @@ $(function() {
             var modalForm = '$("body").append(\'' + form + '\');' + '$("#domain").val(window.location.hostname);' + ajaxSubmit;
             var bootstrapSource = '<link href="' + bootstrapCss + '" rel="stylesheet">\n<script src="' + bootstrapJs + '"></script>';
             var copiableScript = bootstrapSource + '\n' + '<script>\n' + supportButton + modalForm + '\n</script>';
-            var formSrc = '\n<script src="' + 'http://' + window.location.hostname + '/' + filename + '"></script>';
+            var formSrc = '\n<script src="' + 'http://' + window.location.hostname + '/' + address + '"></script>';
             var copiableScript2 = bootstrapSource + formSrc;
 
-            $.post('save-js.php', {message: supportButton + modalForm, filename: filename});
+            $.post('save-js.php', {message: supportButton + modalForm, filename: filename, hashUserId : hashUserId ,hashFormId : hashFormId});
 
             $copyMe.find('textarea').val(copiableScript2);
             $copyMeAdvanced.find('textarea').val(copiableScript);
@@ -216,11 +259,12 @@ $(function() {
             });
 
 
-        }, 'json');
 
-        //TODO: nastylovat trosku ten clipboard, pohrat sa s vypisom jqgridu co sa tyka stylovania, najst jqgrid s bootstrap alebo responsive plugin.
-        // nahrat to na openshift a vytvorit databazu a nejake test web...
-        //napriklad /test na rovnakej domene.
+//            if($new) {
+//                window.location = window.location.origin + '/form.php?id=' + $formId;
+//            }
+
+        }, 'json');
 
         $('#supportForm').toggle('slow', function() {
             $('#confirmed').toggle('slow');
@@ -247,31 +291,87 @@ $(function() {
 
 ////////////////////////////GRID ///////////////////////////////
 
-    $("#list").jqGrid({
-        url: "grid.php",
-        datatype: "json",
-        autowidth: true,
-        height: $(window).height() - 220,
-        mtype: "GET",
-        colNames: ["ID", "Date Create", "Message", "Read", "Flag", "Replied", "Action"],
-        colModel: [
+    $("#jqGridMails").jqGrid({
+    url: "grid-mails.php",
+            datatype: "json",
+            height: $(window).height() - 220,
+            mtype: "GET",
+            colNames: ["ID", "Date Create", "Message", "Form Name", "Read", "Flag", "Replied", "Action"],
+            colModel: [
             {name: "id", width: 55},
             {name: "date_create", formatter: 'date', formatoptions: {srcformat: "d.m.Y H:i:s", newformat: "d.m.Y H:i:s"}, width: 200},
-            {name: "message", formatter: 'text', width: 200},
+            {name: "message", width: 200,
+                    formatter: function(v) {
+                        return '<div class="mh50">' + v + '</div>';
+                    }
+            },
+            {name: "form-action", formatter: 'text', width: 200},
             {name: "read", width: 80, formatter: 'checkbox', align: "center"},
             {name: "flag", width: 80, formatter: 'checkbox', align: "center"},
             {name: "replied", width: 80, formatter: 'checkbox', align: "center"},
-            {name: "action", widt: 40, formatter: PKId_formatter, align: "center"}
-        ],
-        pager: "#pager",
-        rowNum: 20,
-        rowList: [10, 20, 30, 40, 50],
-        sortname: "id",
-        sortorder: "desc",
-        viewrecords: true,
-        gridview: true,
-        autoencode: true,
-        caption: "Received emails",
+            {name: "action", widt: 40, formatter: reply_formatter, align: "center"}
+            ],
+            pager: "#pager",
+            rowNum: 20,
+            rowList: [10, 20, 30, 40, 50],
+            sortname: "id",
+            sortorder: "desc",
+            viewrecords: true,
+            gridview: true,
+            autoencode: true,
+            caption: "Received emails",
+            onSelectRow: handleSelectedRow
+    });
+
+        $("#jqGridForms").jqGrid({
+            url: "grid-forms.php",
+            datatype: "json",
+            height: $(window).height() - 220,
+            mtype: "GET",
+            colNames: ["ID", "Form Action", "Domain", "Action"],
+            colModel: [
+            {name: "id", width: 55},
+            {name: "form-action", width: 80, formatter: 'text', align: "left"},
+            {name: "domain", width: 80, formatter: 'text', align: "left"},
+            {name: "action", widt: 40, formatter: config_formatter, align: "center"}
+            ],
+            pager: "#pager",
+            rowNum: 20,
+            rowList: [10, 20, 30],
+            sortname: "id",
+            sortorder: "desc",
+            viewrecords: true,
+            gridview: true,
+            autoencode: true,
+            caption: "Configured forms"
+    });
+
+    $(window).bind('resize', function() {
+        $("#jqGridMails").setGridWidth($('#mails').width(), true);
+        $("#jqGridForms").setGridWidth($('#forms').width(), true);
+    }).trigger('resize');
+
+    $(".notRegistered").click(function(e){
+       e.preventDefault();
+       $("#formLogIn").slideToggle('slow');
+       $("#formSignUp").slideToggle('slow');
+    });
+    
+    $(".backToLogin").click(function(e){
+       e.preventDefault();
+       if($("#formSignUp").is(":visible")) {
+           $("#formSignUp").slideToggle('slow');
+       }
+       if($("#formForgotPassword").is(":visible")) {
+           $("#formForgotPassword").slideToggle('slow');
+       }
+       $("#formLogIn").slideToggle('slow');
+    });
+    
+    $(".forgotPassword").click(function(e){
+       e.preventDefault();
+       $("#formLogIn").slideToggle('slow');
+       $("#formForgotPassword").slideToggle('slow');
     });
 
 });
@@ -279,9 +379,22 @@ $(function() {
 ////////////////////////////////////////////////////////////////////////
 
 
-function PKId_formatter(cellvalue, options, rowObject) {
-    console.log(options);
+function reply_formatter(cellvalue, options, rowObject) {
     return '<a href="reply.php?id=' + rowObject[0] + '">Reply</a>';
+}
+
+function config_formatter(cellvalue, options, rowObject) {
+    return '<a href="form.php?id=' + rowObject[0] + '">Config the form</a>';
+}
+
+function handleSelectedRow(rowId, status, e) {
+    var div = $("#" + rowId).children("td[aria-describedby=jqGridMails_message]").find("div");
+    if (status) {
+        div.removeClass("mh50");
+    } else {
+        div.addClass("mh50");
+        $(this).jqGrid('resetSelection');
+    }
 }
 
 
@@ -324,4 +437,8 @@ function cloneElement(rowNumber, type, data) {
         $clone.appendTo('form#supportForm #buttons');
     }
 
+}
+
+function deleteRow() {
+        $('#delete').trigger('click');
 }

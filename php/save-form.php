@@ -1,13 +1,46 @@
 <?php
-$configFile = "config/configureForm.json";
+include "functions.php";
 
-$json = json_decode(file_get_contents($configFile), true);
-$json["form"] = json_encode($_POST);
+$json = array();
+$data = array();
 
-$fh = fopen($configFile,'w+') or die("can't open file");
-fwrite($fh, json_encode($json));
-fclose($fh);
+if($_POST) {
+
+    $data["id"] = (int) $_POST["formId"];
+    unset($_POST["formId"]);
+
+    $json["form"] = $_POST;
+    $data["config"] = json_encode($json);
+    $data["user_id"] = $_SESSION["user_id"];
+
+    $formId = saveFormConfig($data);
+
+    if(!$formId) {
+        $data["config"] = "error";
+    }
+
+//$data["config"]["new"] = "true";
+
+    $jsonArr = $data["config"];
+
+
+    //nacpat new do formulara!!!!!!!!!!!!!!!!!
+
+
+//    $jsonArr->formId = $formId;
+
+//    var_dump($formId);die;
+
+
+//    if($formId == $data["id"]) {
+//        $jsonArr->new = "true";
+//    } else {
+//        $jsonArr->new = "false";
+//    }
+
+
+}
 
 header('Content-Type: application/json');
-echo file_get_contents(($configFile), true);
+echo $jsonArr;
 ?>
