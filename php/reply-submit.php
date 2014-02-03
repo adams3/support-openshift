@@ -2,7 +2,7 @@
 
 include 'functions.php';
 //require_once 'vendor/autoload.php';
-//use Mailgun\Mailgun;
+use Mailgun\Mailgun;
 
 if (isset($_POST)) {
     if (isset($_POST["delete"])) {
