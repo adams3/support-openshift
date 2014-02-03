@@ -9,6 +9,14 @@ require dirname(__FILE__) . '/../libs/dibi/dibi/dibi.php';
 //    'database' => 'support_db',
 //);
 
+define('DB_HOST', getenv('OPENSHIFT_MYSQL_DB_HOST'));
+define('DB_PORT',getenv('OPENSHIFT_MYSQL_DB_PORT')); 
+define('DB_USER',getenv('OPENSHIFT_MYSQL_DB_USERNAME'));
+define('DB_PASS',getenv('OPENSHIFT_MYSQL_DB_PASSWORD'));
+define('DB_NAME',getenv('OPENSHIFT_GEAR_NAME'));
+
+var_dump(DB_HOST);die;
+
 $options = array(
     'driver' => 'mysql',
     'host' => 'localhost',
