@@ -72,7 +72,7 @@ function changePassword($email) {
         $password = rand_passwd();
         $arr["password"] = md5($password);
         $res = dibi::query('UPDATE hd_user SET', $arr, 'WHERE `email` = %s', $email);
-        
+
         if($res) {
             $mg = new Mailgun("key-75wv99jndh25oueyatftijqf09xjk9v5");
             $domain = "sandbox7573.mailgun.org";
@@ -89,9 +89,9 @@ function changePassword($email) {
             );
             $mg->sendMessage($domain, $mailValues);
         }
-        
+
         return $res;
-        
+
     } catch (DibiException $e) {
         die($e);
     }
@@ -114,6 +114,7 @@ function login($email, $password) {
         $result = dibi::query("SELECT id, email, name, surname FROM `hd_user` WHERE email = '$email' AND password = '$password'");
         $row = $result->fetchAll();
     } catch (DibiException $e) {
+        die($e);
         die("Whooops. Error occured. We are sorry.");
     }
     return $row[0];
@@ -159,7 +160,7 @@ function getFormById($id) {
         $userId = $_SESSION["user_id"];
         $result = dibi::query("SELECT config FROM `hd_form` WHERE id = $id AND user_id = $userId");
         $row = $result->fetchAll();
-        
+
         return isset($row[0]) ? $row[0] : null;
     } catch (DibiException $e) {
         die($e);
