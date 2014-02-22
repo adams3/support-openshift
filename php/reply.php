@@ -2,20 +2,28 @@
 require_once 'header.php';
 
 $rowString = "";
-$sent = $_GET["sent"];
+$sent = "";
+$from="";
+$to = "";
+$subject = "";
+$domain="";
+$id = 0;
+if(isset($_GET["sent"])) {
+    $sent = $_GET["sent"];
+}
 $configFile = "config/configureForm.json";
 
 $json = json_decode(file_get_contents($configFile), true);
 $form = (array) json_decode($json["form"]);
 
-if ($_GET["id"]) {
+if (isset($_GET["id"])) {
     $id = $_GET["id"];
 
     $row = getMessageById($id);
     markMessageAsRead((int) $id);
 
     $rowString = "\n\n------------------------------------------------------------------------------\n";
-    $informMessage = "Your message from: ";
+    $informMessage = "Customer Message from: ";
 
     if ($row["replied"]) {
         $informMessage = "Administrator reply from: ";
@@ -30,7 +38,6 @@ if ($_GET["id"]) {
     }
     $rowString .= $formatedMessage;
 
-//    $domain = "";
     $domain = $row["domain"];
     $from = $form["send-to"];
     $to = "";
@@ -56,6 +63,12 @@ if ($sent == "success") {
     echo '<div class="alert alert-danger">Oh snap! There was an error while sending this message.</div>';
 }
 ?>
+<div class="page-header mt0">
+  <h1><?php if($_GET){ echo "Reply to customer <small>Your reply will be saved</small>"; } else { echo "Send an email <small>Your email message will not be saved</small>"; } ?>
+
+  </h1>
+</div>
+<?php if($_GET){ echo '<a href="/mails.php"><button id="goBack" class="mb20 btn btn-primary " type="button">Back to Query List</button></a>'; } ?>
 
 <div class="well well-new">
     <form id="replyForm" class="form-horizontal" name="reply-form" role="form" action="reply-submit.php" method="post">
@@ -93,14 +106,15 @@ if ($sent == "success") {
         </div>
         <br>
         <div class="separator mt15"/></div>
-<div class=" center add mt15">
+    <div class=" center add mt15">
     <div class=" col-md-12 no-pl">
-        <input id="send" type="submit" class="btn btn-success" value="Send message">
+        <input id="send" name="send" type="submit" class="btn btn-success" value="Send message">
+        <input id="delete" name="delete" type="submit" class="btn btn-success hide" value="delete">
+        <button class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmation">Delete</button>
     </div>
 </div>
 </form>
 </div> <!-- /container -->
-
 
 <?php
 require_once 'footer.php';

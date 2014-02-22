@@ -1,32 +1,39 @@
 <?php
 include "functions.php";
-$configFile = "config/configure.json";
 
-$json = json_decode(file_get_contents($configFile), true);
-session_start();
+/*
 
-if ($_SESSION["login"] != $json["admin"]["login"]) {
+        //TODO: nastylovat trosku ten clipboard
+        //checkboxy nastylovat v gride
 
-    if ($json["admin"]["login"] == $_POST["login"] && $json["admin"]["password"] == $_POST["password"]) {
-        $_SESSION["login"] = $_POST["login"];
-        $_SESSION["password"] = md5($_POST["password"]);
-    } else {
-        if ($_POST) {
-            header("location:index.php?success=false");
-        } else {
-            header("location:index.php");
-        }
-    }
-}
+ * dokoncit delete form a porozmyslat nad aktivnym formularom.
+ * delete user? asi iba si dam deleted k userovi ktore sa bude nastavovat v db
+ * user change password
+ * selectbox, radio button ?
+ * spravy-> flags checkboxy
+ *
+ * required nejako nefunguje na openshift asi js chyba pozriet
+
+ *
+ *  */
+
 
 $uri = $_SERVER["REQUEST_URI"];
 $a1 = "";
 $a2 = "";
-if ($uri == "/main.php") {
+$a3 = "";
+$a4 = "";
+if ($uri == "/form.php") {
     $a1 = "active";
 }
-if ($uri == "/mails.php") {
+if ($uri == "/forms.php") {
     $a2 = "active";
+}
+if ($uri == "/mails.php") {
+    $a3 = "active";
+}
+if ($uri == "/reply.php") {
+    $a4 = "active";
 }
 ?>
 
@@ -38,16 +45,18 @@ if ($uri == "/mails.php") {
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <title>Support Form Maker</title>
+        <title>Helpdesk Form Maker</title>
 
         <!-- Bootstrap core CSS -->
-        <link href="css/bootstrap.css" rel="stylesheet">
+        <link href="/stylesheets/css/bootstrap.css" rel="stylesheet">
 
         <!-- Custom styles for this template -->
-        <link href="css/navbar.css" rel="stylesheet">
-        <link href="css/custom.css" rel="stylesheet">
-        <link href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet">
+        <link rel="stylesheet" href="/stylesheets/css/navbar.css" >
+        <link rel="stylesheet" href="/stylesheets/css/custom.css" >
         <link rel="stylesheet" type="text/css" media="screen" href="/js/jqGrid-4.5/css/ui.jqgrid.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/css/custom-theme/jquery-ui-1.10.3.custom.css" />
+        <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/css/custom-theme/ui.jqgrid.css" />
+        <!--<link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/css/custom-theme/jqGrid.overrides.css" />-->
 
         <!--[if lt IE 9]>
           <script src="../../assets/js/html5shiv.js"></script>
@@ -71,13 +80,15 @@ if ($uri == "/mails.php") {
                         <span class="icon-bar"></span>
                     </button>
 
-                    <a class="navbar-brand" href="/">Support Form Admin</a>
+                    <a class="navbar-brand" href="main.php">Helpdesk Administration</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li class="<?php echo $a1; ?>"><a href="/">Form Maker</a></li>
-                        <li class="<?php echo $a1; ?>"><a href="/mails.php">Customer queries <span class="badge"><?php echo getNumberOfUnread() ?></span></a></li>
-                        <li class="<?php echo $a1; ?>"><a href="/reply.php">New message</a></li>
+                        <li class="<?php echo $a1; ?>"><a href="/form.php">New Form</a></li>
+                        <li class="<?php echo $a2; ?>"><a href="/forms.php">My forms <span class="badge"><?php echo getNumberOfForms($_SESSION["user_id"]) ?></span></a></li>
+                        <li class="<?php echo $a3; ?>"><a href="/mails.php">Customer queries <span class="badge"><?php echo getNumberOfUnread($_SESSION["user_id"]) ?></span></a></li>
+                        <li class="<?php echo $a4; ?>"><a href="/reply.php">New message</a></li>
+                        <li><a href="#" onclick="TogetherJS(this); return false;">Collaborate</a></li>
 <!--                        <li class="dropdown <?php echo $a2; ?>">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Helpdesk<b class="caret"></b></a>
                             <ul class="dropdown-menu">
@@ -87,12 +98,11 @@ if ($uri == "/mails.php") {
                                                         <li class="dropdown-header">Nav header</li>
                                                         <li><a href="#">One more separated link</a></li>-->
                     </ul>
-                    </li>
-                    </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li class="active"><a href="/logout.php">Logout</a></li>
                     </ul>
                 </div><!--/.nav-collapse -->
             </div>
         </div>
+
         <div class="container">
